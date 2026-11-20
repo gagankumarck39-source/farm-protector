@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Pair a farm phone and securely broadcast a live crop camera." />
+    <title>Farm Protector | Farm Camera Setup</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="camera-device-page">
+    <main class="auth-gate">
+      <section class="auth-card camera-device-setup">
+        <div class="auth-brand">
+          <div class="logo-mark">FP</div>
+          <div>
+            <p class="eyebrow">Farm Protector</p>
+            <h1 id="cameraDeviceTitle">Farm camera setup</h1>
+          </div>
+        </div>
+        <div class="auth-language">
+          <label for="authLanguageSelect">Language</label>
+          <select id="authLanguageSelect">
+            <option value="English">English</option>
+            <option value="Kannada">Kannada</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Tamil">Tamil</option>
+            <option value="Telugu">Telugu</option>
+            <option value="Malayalam">Malayalam</option>
+          </select>
+        </div>
+        <p id="cameraDeviceDescription">Enter the one-time code created by the farm account to pair this phone.</p>
+        <form id="devicePairForm">
+          <label>
+            One-time pairing code
+            <input name="code" type="text" inputmode="text" autocomplete="one-time-code" maxlength="32" required />
+          </label>
+          <p id="cameraDeviceError" class="auth-error" role="alert" hidden></p>
+          <button id="pairCameraButton" class="primary-button" type="submit">Pair this phone</button>
+        </form>
+        <div id="pairedCameraControls" class="camera-device-controls" hidden>
+          <p id="pairedCameraName" class="camera-device-paired-label"></p>
+          <video id="pairedCameraPreview" class="camera-video" autoplay muted playsinline hidden></video>
+          <span id="pairedCameraStatus" class="tag neutral" role="status" aria-live="polite">Camera is offline</span>
+          <button id="startPairedCamera" class="primary-button" type="button">Start camera broadcast</button>
+          <button id="stopPairedCamera" class="ghost-button" type="button" hidden>Stop camera broadcast</button>
+          <button id="signOutPairedCamera" class="text-button" type="button">Unpair this phone</button>
+          <p class="camera-note">Keep this page open and the phone powered, awake, and online. Locking the phone or closing this page may stop the camera.</p>
+        </div>
+        <p class="auth-note">Pairing codes expire after 10 minutes and can only be used once. The farm account password is never entered or stored on this phone.</p>
+      </section>
+    </main>
+    <script src="i18n.js?v=10"></script>
+    <script src="camera-device.js?v=1"></script>
+  </body>
+</html>

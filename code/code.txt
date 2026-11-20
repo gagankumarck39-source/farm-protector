@@ -1,0 +1,122 @@
+#include <SoftwareSerial.h>
+
+// Software Serial pins for SIM800L GSM Transceiver (Rx=10, Tx=11)
+SoftwareSerial gsmSerial(10, 11);
+
+// Hardware Pin Definitions
+const int PIR_SENSOR_PIN   = 2;   // Boundary Motion Sensor Pin
+const int FLAME_SENSOR_PIN = 3;   // Optical Flame Sensor Pin
+const int BUZZER_PIN       = 4;   // Piezoelectric Buzzer Output
+const int STROBE_LED_PIN   = 5;   // High-Intensity LED Strobe Output
+const int RELAY_PUMP_PIN   = 6;   // 5V Relay Control Output
+const int SOIL_SENSOR_PIN  = A0;  // Soil Moisture Analog Input Pin
+
+// Operational Thresholds
+const int SOIL_DRY_THRESHOLD = 400; // Moisture threshold value
+
+// Alert State Management Flags
+bool isMotionAlertSent = false;
+bool isFireAlertSent   = false;
+
+void setup() {
+  // Initialize Hardware UART for Serial Monitor
+  Serial.begin(9600);
+  
+  // Initialize Software UART for GSM Module
+  gsmSerial.begin(9600);
+
+  // Configure Pin Directions
+  pinMode(PIR_SENSOR_PIN, INPUT);
+  pinMode(FLAME_SENSOR_PIN, INPUT);
+  pinMode(SOIL_SENSOR_PIN, INPUT);
+
+  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(STROBE_LED_PIN, OUTPUT);
+  pinMode(RELAY_PUMP_PIN, OUTPUT);
+
+  // Initialize Default Low Power States
+  digitalWrite(BUZZER_PIN, LOW);
+  digitalWrite(STROBE_LED_PIN, LOW);
+  digitalWrite(RELAY_PUMP_PIN, LOW);
+
+  Serial.println("==========================================");
+  Serial.println("    FARM PROTECTOR SYSTEM INITIALIZING    ");
+  Serial.println("==========================================");
+  
+  delay(3000); // Allow GSM Module network registration
+  initializeGSM();
+  Serial.println("[SYSTEM READY]: Monitoring Active.");
+}
+
+void loop() {
+  // Read Digital Sensor States
+  int pirStatus   = digitalRead(PIR_SENSOR_PIN);
+  int flameStatus = digitalRead(FLAME_SENSOR_PIN); // LOW indicates light detection
+  int soilVal     = analogRead(SOIL_SENSOR_PIN);
+
+  // ---------------- 1. FIRE DETECTION LOGIC ----------------
+  if (flameStatus == LOW) {
+    digitalWrite(BUZZER_PIN, HIGH);
+    digitalWrite(STROBE_LED_PIN, HIGH);
+    Serial.println("[CRITICAL WARNING]: FIRE HAZARD DETECTED!");
+
+    if (!isFireAlertSent) {
+      sendSMS("[INSERT YOUR MOBILE NUMBER]", "EMERGENCY: Fire detected on your agricultural field!");
+      isFireAlertSent = true;
+    }
+  } else {
+    isFireAlertSent = false;
+  }
+
+  // ---------------- 2. INTRUSION DETECTION LOGIC ----------------
+  if (pirStatus == HIGH) {
+    digitalWrite(BUZZER_PIN, HIGH);
+    digitalWrite(STROBE_LED_PIN, HIGH);
+    Serial.println("[SECURITY ALERT]: Motion Detected at Perimeter Boundary!");
+
+    if (!isMotionAlertSent) {
+      sendSMS("[INSERT YOUR MOBILE NUMBER]", "SECURITY ALERT: Boundary intrusion detected at Sector A.");
+      isMotionAlertSent = true;
+    }
+  } else if (flameStatus != LOW) {
+    // Silence outputs if neither fire nor motion is active
+    digitalWrite(BUZZER_PIN, LOW);
+    digitalWrite(STROBE_LED_PIN, LOW);
+    isMotionAlertSent = false;
+  }
+
+  // ---------------- 3. AUTOMATED IRRIGATION LOGIC ----------------
+  if (soilVal < SOIL_DRY_THRESHOLD) {
+    digitalWrite(RELAY_PUMP_PIN, HIGH);
+    Serial.println("[IRRIGATION]: Soil Dry. Water Pump Relay ACTIVATED.");
+  } else {
+    digitalWrite(RELAY_PUMP_PIN, LOW);
+    Serial.println("[IRRIGATION]: Soil Moisture Optimal. Water Pump DEACTIVATED.");
+  }
+
+  delay(500); // Main loop timing delay
+}
+
+// GSM Initialization Subroutine
+void initializeGSM() {
+  gsmSerial.println("AT");
+  delay(1000);
+  gsmSerial.println("AT+CMGF=1"); // Select SMS Text Mode
+  delay(1000);
+  Serial.println("[GSM]: SIM800L Configured Successfully.");
+}
+
+// SMS Transmission Subroutine
+void sendSMS(String mobileNumber, String textMessage) {
+  gsmSerial.println("AT+CMGF=1");
+  delay(500);
+  gsmSerial.print("AT+CMGS=\"");
+  gsmSerial.print(mobileNumber);
+  gsmSerial.println("\"");
+  delay(500);
+  gsmSerial.print(textMessage);
+  delay(500);
+  gsmSerial.write(26); // ASCII character for CTRL+Z
+  delay(3000);
+  Serial.println("[GSM]: SMS Dispatched Successfully.");
+}

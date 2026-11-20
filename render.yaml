@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: farm-protector
+    runtime: python
+    plan: starter
+    buildCommand: python -m compileall -q server.py
+    startCommand: python server.py
+    healthCheckPath: /
+    disk:
+      name: farm-protector-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: FARMPROTECTOR_HOST
+        value: 0.0.0.0
+      - key: FARMPROTECTOR_DB
+        value: /var/data/farm-protector.sqlite3
+      - key: FARMPROTECTOR_SECURE_COOKIES
+        value: "true"
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false

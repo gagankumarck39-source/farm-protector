@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Farm Protector | Farm Monitoring Dashboard</title>
+    <meta
+      name="description"
+      content="Monitor farm locations, crop health, drone telemetry, and field operations with Farm Protector."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="style.css?v=8" />
+  </head>
+  <body>
+    <main id="authGate" class="auth-gate" aria-labelledby="authTitle">
+      <section class="auth-card">
+        <div class="auth-brand">
+          <div class="logo-mark">FP</div>
+          <div>
+            <p class="eyebrow">Farm Protector</p>
+            <h1 id="authTitle">Farmer sign in</h1>
+          </div>
+        </div>
+        <div class="auth-language">
+          <label for="authLanguageSelect">Language</label>
+          <select id="authLanguageSelect">
+            <option value="English">English</option>
+            <option value="Kannada">Kannada</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Tamil">Tamil</option>
+            <option value="Telugu">Telugu</option>
+            <option value="Malayalam">Malayalam</option>
+          </select>
+        </div>
+        <p id="authDescription">Sign in to securely access your farm profile and saved records.</p>
+        <form id="authForm">
+          <label>
+            Email
+            <input name="email" type="email" autocomplete="email" maxlength="254" required />
+          </label>
+          <label>
+            Password
+            <input name="password" type="password" autocomplete="current-password" minlength="10" maxlength="200" required />
+          </label>
+          <div id="registrationFields" hidden>
+            <label>
+              Farmer name
+              <input name="name" type="text" autocomplete="name" maxlength="100" />
+            </label>
+            <label>
+              Farm name
+              <input name="farm_name" type="text" maxlength="120" />
+            </label>
+            <label>
+              Crops grown
+              <input name="crops" type="text" placeholder="Rice, vegetables…" maxlength="240" />
+            </label>
+            <label>
+              Short bio
+              <textarea name="bio" rows="3" maxlength="1000" placeholder="Tell us about your farm"></textarea>
+            </label>
+          </div>
+          <p id="authError" class="auth-error" role="alert" hidden></p>
+          <button id="authSubmit" class="primary-button" type="submit">Sign in</button>
+        </form>
+        <div id="googleAuthDivider" class="auth-divider" role="separator">
+          <span>or</span>
+        </div>
+        <button id="googleSignInButton" class="google-sign-in-button" type="button" disabled>
+          <span class="google-mark" aria-hidden="true">G</span>
+          <span>Continue with Google</span>
+        </button>
+        <p id="googleAuthNote" class="auth-note" role="status" hidden></p>
+        <p class="auth-switch">
+          <span id="authSwitchText">New to Farm Protector?</span>
+          <button id="authModeToggle" class="text-button" type="button">Create an account</button>
+        </p>
+        <p class="auth-note">Your password is protected by the server. Farm profile details and farm records are stored in its SQLite database.</p>
+      </section>
+    </main>
+
+    <div class="app-shell" id="appShell" hidden>
+      <aside class="sidebar">
+        <div class="brand-block">
+          <div class="logo-mark">FP</div>
+          <div>
+            <p class="eyebrow">Global Farm Protector Technologies</p>
+            <h1>Farm Protector</h1>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Main navigation">
+          <button class="nav-item active" data-target="dashboard">
+            <span class="nav-icon">▣</span>
+            <span>Dashboard</span>
+          </button>
+          <button class="nav-item" data-target="crop-health">
+            <span class="nav-icon">◌</span>
+            <span>Crop Health</span>
+          </button>
+          <button class="nav-item" data-target="live-camera">
+            <span class="nav-icon">▣</span>
+            <span>Live Crop Camera</span>
+          </button>
+          <button class="nav-item" data-target="ai-assistant">
+            <span class="nav-icon">✦</span>
+            <span>AI Assistant</span>
+          </button>
+          <button class="nav-item" data-target="charts">
+            <span class="nav-icon">⬢</span>
+            <span>Charts</span>
+          </button>
+          <button class="nav-item" data-target="drones">
+            <span class="nav-icon">✈</span>
+            <span>Drone Fleet</span>
+          </button>
+          <button class="nav-item" data-target="farm-map">
+            <span class="nav-icon">⌂</span>
+            <span>Farm Map</span>
+          </button>
+          <button class="nav-item" data-target="farms-fields">
+            <span class="nav-icon">☰</span>
+            <span>Farms &amp; Fields</span>
+          </button>
+          <button class="nav-item" data-target="alerts">
+            <span class="nav-icon">⚑</span>
+            <span>Alerts</span>
+          </button>
+          <button class="nav-item" data-target="reports">
+            <span class="nav-icon">▤</span>
+            <span>Reports</span>
+          </button>
+          <button class="nav-item" data-target="calendar">
+            <span class="nav-icon">◫</span>
+            <span>Crop Calendar</span>
+          </button>
+          <button class="nav-item" data-target="expenses">
+            <span class="nav-icon">₹</span>
+            <span>Expenses</span>
+          </button>
+          <button class="nav-item" data-target="settings">
+            <span class="nav-icon">⚙</span>
+            <span>Settings</span>
+          </button>
+        </nav>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div class="toolbar-left">
+            <button class="ghost-button sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+            <div class="search-box">
+              <span>⌕</span>
+              <input type="search" aria-label="Search" placeholder="Search farms, fields, drones, alerts..." />
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <div class="lang-picker">
+              <label for="languageSelect" class="sr-only">Language</label>
+              <select id="languageSelect" aria-label="Select language">
+                <option value="English">English</option>
+                <option value="Kannada">Kannada</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Tamil">Tamil</option>
+                <option value="Telugu">Telugu</option>
+                <option value="Malayalam">Malayalam</option>
+              </select>
+            </div>
+              <div id="connectionStatus" class="status-tile connecting" role="status" aria-live="polite">Connecting to sensor API…</div>
+              <button class="icon-button" aria-label="Notifications">🔔</button>
+            <button class="theme-toggle" aria-label="Toggle dark mode">☼</button>
+            <div class="profile-pill">
+              <div class="avatar">AR</div>
+              <div>
+                <strong id="profileName">Farmer</strong>
+                <small id="profileFarmName">Farm</small>
+              </div>
+              <button id="logoutButton" class="ghost-button small" type="button">Sign out</button>
+            </div>
+          </div>
+        </header>
+
+        <div class="content-area">
+          <section class="page active" id="dashboard">
+            <div class="page-header">
+              <div>
+                <p class="eyebrow">Operations overview</p>
+                <h2>Farm Monitoring Dashboard</h2>
+              </div>
+              <div class="page-actions">
+                <div class="date-filter" aria-label="Date range filter">
+                  <button class="filter-chip active" type="button" data-range="today">Today</button>
+                  <button class="filter-chip" type="button" data-range="7d">7D</button>
+                  <button class="filter-chip" type="button" data-range="30d">30D</button>
+                  <button class="filter-chip" type="button" data-range="custom">Custom</button>
+                </div>
+                <button class="primary-button">Export report</button>
+              </div>
+            </div>
+            <div id="customRangeFields" class="custom-range-controls" hidden>
+              <label>
+                From
+                <input id="customRangeStart" type="date" required />
+              </label>
+              <label>
+                To
+                <input id="customRangeEnd" type="date" required />
+              </label>
+              <button id="applyCustomRange" class="primary-button" type="button">Apply range</button>
+            </div>
+
+            <div id="dashboardMetrics" class="metric-grid"></div>
+            <p id="dashboardAnalysisSummary" class="dashboard-note" aria-live="polite">Date-range analysis uses sensor readings captured by this browser. Earlier history is unavailable until readings have been collected.</p>
+            <div id="insightPanel" class="insight-panel"></div>
+            <div id="arduinoPanel" class="arduino-panel"></div>
+
+            <div class="content-grid two-col">
+              <div class="card chart-card">
+                <div class="card-header">
+                  <h3>Sensor temperature trend</h3>
+                  <span id="dashboardAnalysisLabel" class="tag neutral">Today</span>
+                </div>
+                <div id="growthChart" class="chart-host" aria-label="Sensor temperature trend"></div>
+              </div>
+
+              <div class="card chart-card">
+                <div class="card-header">
+                  <h3>Field comparison</h3>
+                  <span class="tag neutral">Demo values</span>
+                </div>
+                <div id="fieldComparisonChart" class="chart-host" aria-label="Field comparison chart"></div>
+              </div>
+            </div>
+
+            <div class="content-grid two-col">
+              <div class="card">
+                <div class="card-header">
+                  <h3>Recent crop images</h3>
+                  <button class="ghost-button small">View all</button>
+                </div>
+                <div id="recentImages" class="image-grid"></div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h3>Recent alerts</h3>
+                  <button class="ghost-button small">Manage</button>
+                </div>
+                <div id="recentAlerts" class="alert-stack"></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Latest telemetry</h3>
+                <span id="telemetryUpdatedAt" class="tag neutral">Waiting for sensor data</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Drone</th>
+                      <th>Field</th>
+                      <th>Battery</th>
+                      <th>Temp</th>
+                      <th>Humidity</th>
+                      <th>GPS</th>
+                      <th>Distance</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="telemetryTable"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Live device readings</h3>
+                <span class="tag neutral">ESP32 telemetry API</span>
+              </div>
+              <div class="sensor-grid">
+                <div class="sensor-stat">
+                  <span>Soil moisture</span>
+                  <strong>41%</strong>
+                  <small>Optimal for rice crop</small>
+                </div>
+                <div class="sensor-stat">
+                  <span>pH level</span>
+                  <strong>6.4</strong>
+                  <small>Balanced</small>
+                </div>
+                <div class="sensor-stat">
+                  <span>Water pump</span>
+                  <strong>Auto</strong>
+                  <small>Cycle 06:10 AM</small>
+                </div>
+                <div class="sensor-stat">
+                  <span>Solar charge</span>
+                  <strong>88%</strong>
+                  <small>Battery backup</small>
+                </div>
+              </div>
+              <div class="automation-actions">
+                <button class="action-chip primary">Start irrigation</button>
+                <button class="action-chip">Run soil test</button>
+                <button class="action-chip">Sync edge nodes</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" id="crop-health">
+            <div class="page-header">
+              <div>
+                <p class="eyebrow">AI powered inspection</p>
+                <h2>Crop Health Monitoring</h2>
+              </div>
+              <button class="primary-button" id="uploadCropImageButton" type="button">Upload image</button>
+            </div>
+            <div class="content-grid two-col">
+              <div class="card">
+                <div class="upload-box">
+                  <input type="file" id="imageUpload" accept="image/*" aria-label="Choose crop field image" />
+                  <label for="imageUpload">Drop a crop image or click to upload</label>
+                </div>
+                <div id="analysisPreview" class="analysis-preview">
+                  <div class="analysis-placeholder">Upload a field image to see its visual crop coverage analysis.</div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h3>Image analysis</h3>
+                  <span id="analysisStatus" class="tag neutral">Waiting for image</span>
+                </div>
+                <div id="analysisSummary" class="analysis-summary"></div>
+                <p class="analysis-disclaimer">Visual color estimate only—not a crop disease diagnosis. For a meaningful comparison, use images of the same field from a similar angle and lighting.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" id="live-camera">
+            <div class="page-header">
+              <div>
+                <p class="eyebrow">Remote field viewing</p>
+                <h2>Live Crop Camera</h2>
+              </div>
+            </div>
+            <div class="camera-grid">
+              <article class="card camera-card">
+                <div class="card-header">
+                  <h3>Add a farm camera</h3>
+                  <span id="cameraBroadcastStatus" class="tag neutral" role="status" aria-live="polite">No camera device selected</span>
+                </div>
+                <p>Register a phone kept at the farm. A one-time pairing code connects it to this account without sharing the account password.</p>
+                <form id="cameraDeviceForm" class="camera-device-form">
+                  <label>
+                    Device name
+                    <input name="name" type="text" maxlength="100" placeholder="e.g. North field phone" required />
+                  </label>
+                  <label>
+                    Farm
+                    <input name="farm_name" type="text" maxlength="120" placeholder="Farm name or location" required />
+                  </label>
+                  <button class="primary-button" type="submit">Add camera device</button>
+                </form>
+                <div id="cameraPairingCode" class="camera-pairing-code" hidden>
+                  <strong>One-time pairing code</strong>
+                  <code id="cameraPairingCodeValue"></code>
+                  <button id="copyCameraPairingCode" class="ghost-button small" type="button">Copy code</button>
+                  <span id="cameraPairingExpiry"></span>
+                  <p>Open the camera setup page on the farm phone and enter this code. It expires in 10 minutes and can only be used once.</p>
+                  <a class="primary-button camera-pair-link" href="camera-device.html" target="_blank" rel="noopener">Open phone camera setup</a>
+                </div>
+                <div id="cameraDeviceList" class="camera-device-list" aria-live="polite"></div>
+              </article>
+              <article class="card camera-card">
+                <div class="card-header">
+                  <h3>View crops remotely</h3>
+                  <span id="cameraViewerStatus" class="tag neutral" role="status" aria-live="polite">Ready to connect</span>
+                </div>
+                <label class="camera-device-select-label">
+                  Farm camera
+                  <select id="cameraDeviceSelect"></select>
+                </label>
+                <video id="cameraViewer" class="camera-video" autoplay playsinline controls></video>
+                <button id="startCameraViewing" class="primary-button" type="button">Watch live crops</button>
+                <button id="stopCameraViewing" class="ghost-button" type="button" hidden>Stop viewing</button>
+                <p class="camera-note">Sign in with the same farm account on a device with internet access to watch its live camera.</p>
+              </article>
+            </div>
+            <div class="card camera-setup-note">
+              <strong>Internet setup required for reliable viewing anywhere.</strong>
+              <p>Host this site over HTTPS and configure a TURN relay on the server. The default public STUN server may work on some networks, but restrictive mobile and farm networks need TURN. The video travels through WebRTC and is not saved in the farm database.</p>
+            </div>
+          </section>
+
+          <section class="page" id="ai-assistant">
+            <div class="page-header">
+              <div>
+                <p class="eyebrow">Multilingual support</p>
+                <h2>AI Farmer Assistant</h2>
+              </div>
+            </div>
+            <div class="assistant-layout">
+              <div class="card chat-card">
+                <div id="chatMessages" class="chat-messages"></div>
+                <div class="chat-input-wrap">
+                  <input id="chatInput" type="text" placeholder="Ask about field growth, temperature, or drone health..." />
+                  <button id="voiceAssistant" class="icon-button" aria-label="Voice input">🎙️</button>
+                  <button id="sendChat" class="primary-button">Send</button>
+                </div>
+              </div>
+              <div class="card prompt-card">
+                <h3>Suggested prompts</h3>
+                <div class="quick-prompts">
+                  <button class="chip-button" data-prompt="Show crop growth for the last 7 days">Show crop growth</button>
+                  <button class="chip-button" data-prompt="Compare Field A and Field B">Compare fields</button>
+                  <button class="chip-button" data-prompt="Which drone has the lowest battery?">Drone battery</button>
+                  <button class="chip-button" data-prompt="Explain today’s crop measurements in Kannada">Kannada analysis</button>
+                  <button class="chip-button" data-prompt="Generate a weekly farm monitoring report">Weekly summary</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" id="charts">
+            <div class="page-header">
+              <div>
+                <p class="eyebrow">Natural language charting</p>
+                <h2>AI Chart Assistant</h2>
+              </div>
+            </div>
+            <div class="card chart-request-card">
+              <div class="chart-query-row">
+                <input id="chartQuery" type="text" value="Show crop growth for the last 7 days" />
+                <select id="chartTypeSelect" aria-label="Chart type">
+                  <option value="line">Line</option>
+                  <option value="bar">Bar</option>
+                  <option value="pie">Pie</option>
+                  <option value="scatter">Scatter</option>
+                </select>
+                <button id="generateChart" class="primary-button">Generate chart</button>
+              </div>
+              <div class="chart-meta">
+                <span>Language: <strong id="chartLanguageLabel">English</strong></span>
+                <span>Range: <strong id="chartRangeLabel">Last 7 days</strong></span>
+                <span>Source: <strong>Farm DB</strong></span>
+              </div>
+              <div id="aiChartCanvas" class="chart-host" aria-label="AI chart"></div>
+            </div>
+          </section>
+
+          <section class="page" id="drones">
+            <div class="page-header">
+              <div>
+                <p class="eyebrow">Fleet overview</p>
+                <h2>Drone Management</h2>
+              </div>
+            </div>
+            <div id="droneList" class="drone-grid"></div>
+          </section>
+
+          <section class="page" id="farm-map">
+            <div class="page-header">
+              <div>
+                <p class="eyebrow">Location intelligence</p>
+                <h2>Smart Farm Map</h2>
+              </div>
+              <button class="primary-button" id="addLocationButton" type="button">＋ Add location</button>
+            </div>
+            <div class="card map-card">
+              <div class="map-toolbar">
+                <div>
+                  <strong>Farm locations</strong>
+                  <span id="mapLocationCount">Loading locations…</span>
+                </div>
+                <div class="map-toolbar-actions">
+                  <button class="ghost-button small" id="fitMapButton" type="button">Show all farms</button>
+                  <button class="ghost-button small" id="toggleMapSizeButton" type="button" aria-pressed="false">Maximize map</button>
+                </div>
+              </div>
+              <div class="map-layout">
+                <div id="farmMapCanvas" class="farm-map-canvas" role="region" aria-label="Interactive map showing farm locations"></div>
+                <form id="farmLocationForm" class="location-form" hidden>
+                  <div class="location-form-heading">
+                    <div>
+                      <p class="eyebrow">New location</p>
+                      <h3>Add a farm to your map</h3>
+                    </div>
+                    <button class="icon-button" id="closeLocationForm" type="button" aria-label="Close add location form">×</button>
+                  </div>
+                  <label>
+                    Farm name
+                    <input name="name" type="text" placeholder="e.g. Green Valley Farm" maxlength="80" required />
+                  </label>
+                  <label>
+                    Address or region
+                    <input name="location" type="text" placeholder="City, state" maxlength="120" required />
+                  </label>
+                  <div class="location-form-row">
+                    <label>
+                      Latitude
+                      <input name="latitude" type="number" min="-90" max="90" step="any" placeholder="12.9716" required />
+                    </label>
+                    <label>
+                      Longitude
+                      <input name="longitude" type="number" min="-180" max="180" step="any" placeholder="77.5946" required />
+                    </label>
+                  </div>
+                  <label>
+                    Main crop
+                    <input name="crop" type="text" placeholder="Rice, vegetables…" maxlength="80" required />
+                  </label>
+                  <label>
+                    Number of fields
+                    <input name="fields" type="number" min="1" max="999" value="1" required />
+                  </label>
+                  <button class="ghost-button" id="useCurrentLocation" type="button">◎ Use my current location</button>
+                  <button class="primary-button" type="submit">Save farm location</button>
+                </form>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" id="farms-fields">
+            <div class="page-header">
+              <div>
+                <p class="eyebrow">Operations</p>
+                <h2>Farms &amp; Fields</h2>
+              </div>
+              <button class="primary-button" id="addFarmFromListButton" type="button">＋ Add farm / fields</button>
+            </div>
+            <div id="farmList" class="farm-list"></div>
+          </section>
+
+          <section class="page" id="alerts">
+            <div class="page-header">
+              <div>
+                <p class="eyebrow">Notifications</p>
+                <h2>Smart Alerts</h2>
+              </div>
+            </div>
+            <div id="alertTable" class="alert-table"></div>
+          </section>
+
+          <section class="page" id="reports">
+            <div class="page-header">
+              <div>
+                <p class="eyebrow">Delivered insights</p>
+                <h2>Monitoring Reports</h2>
+              </div>
+            </div>
+            <div class="card report-card">
+              <div class="report-actions">
+                <button class="primary-button" id="exportCsv">Export CSV</button>
+                <button class="ghost-button" id="exportPdf">Export PDF</button>
+              </div>
+              <div id="reportSummary" class="report-summary"></div>
+            </div>
+          </section>
+
+          <section class="page" id="calendar">
+            <div class="page-header">
+              <div>
+                <p class="eyebrow">Season planning</p>
+                <h2>Crop Calendar</h2>
+              </div>
+            </div>
+            <div id="calendarList" class="calendar-list"></div>
+          </section>
+
+          <section class="page" id="expenses">
+            <div class="page-header">
+              <div>
+                <p class="eyebrow">Financial tracking</p>
+                <h2>Farm Expenses</h2>
+              </div>
+            </div>
+            <div id="expenseList" class="expense-list"></div>
+          </section>
+
+          <section class="page" id="settings">
+            <div class="page-header">
+              <div>
+                <p class="eyebrow">System preferences</p>
+                <h2>Settings</h2>
+              </div>
+            </div>
+            <div class="card settings-card">
+              <form id="profileForm" class="profile-form">
+                <h3>Farmer profile</h3>
+                <p id="profileEmail" class="muted-text"></p>
+                <label>
+                  Farmer name
+                  <input name="name" type="text" maxlength="100" required />
+                </label>
+                <label>
+                  Farm name
+                  <input name="farm_name" type="text" maxlength="120" required />
+                </label>
+                <label>
+                  Crops grown
+                  <input name="crops" type="text" maxlength="240" required />
+                </label>
+                <label>
+                  Short bio
+                  <textarea name="bio" rows="4" maxlength="1000"></textarea>
+                </label>
+                <button class="primary-button" type="submit">Save profile</button>
+              </form>
+              <div class="setting-row">
+                <span>Language preference</span>
+                <select id="settingsLanguageSelect">
+                  <option value="English">English</option>
+                  <option value="Kannada">Kannada</option>
+                  <option value="Hindi">Hindi</option>
+                  <option value="Tamil">Tamil</option>
+                  <option value="Telugu">Telugu</option>
+                  <option value="Malayalam">Malayalam</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <span>Offline sync</span>
+                <button class="toggle-pill active">Enabled</button>
+              </div>
+              <div class="setting-row">
+                <span>Notification preferences</span>
+                <button class="toggle-pill active">Email + SMS</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <nav class="mobile-nav" aria-label="Mobile navigation">
+      <button class="mobile-item active" data-target="dashboard">Dashboard</button>
+      <button class="mobile-item" data-target="crop-health">Crop health</button>
+      <button class="mobile-item" data-target="live-camera">Live camera</button>
+      <button class="mobile-item" data-target="ai-assistant">AI assistant</button>
+      <button class="mobile-item" data-target="charts">Charts</button>
+      <button class="mobile-item" data-target="drones">Drones</button>
+      <button class="mobile-item" data-target="farm-map">Farm map</button>
+      <button class="mobile-item" data-target="farms-fields">Farms &amp; fields</button>
+      <button class="mobile-item" data-target="alerts">Alerts</button>
+      <button class="mobile-item" data-target="reports">Reports</button>
+      <button class="mobile-item" data-target="calendar">Calendar</button>
+      <button class="mobile-item" data-target="expenses">Expenses</button>
+      <button class="mobile-item" data-target="settings">Settings</button>
+    </nav>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="i18n.js?v=15"></script>
+    <script src="app.js?v=27"></script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+farm-protector.sqlite3
+farm-protector.sqlite3-shm
+farm-protector.sqlite3-wal
+farm-protector.sqlite3-journal
+.farm-protector/
+__pycache__/

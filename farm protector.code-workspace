@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"workbench.browser.openLocalhostLinks": false,
+		"chat.tools.terminal.autoApprove": {
+			"/^node --check app\\.js$/": {
+				"approve": true,
+				"matchCommandLine": true
+			},
+			"/^python -m unittest -v test_server$/": {
+				"approve": true,
+				"matchCommandLine": true
+			}
+		}
+	}
+}
